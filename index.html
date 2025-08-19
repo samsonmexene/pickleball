@@ -1,0 +1,177 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Offline Inventory & Sales App</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div id="app">
+    <!-- Login -->
+    <section id="loginView" class="card max-w-md">
+      <h1>Sign in</h1>
+      <p class="muted">Please ask mexene for password.</p>
+      <form id="loginForm">
+        <label>Username
+          <input id="loginUser" type="text" required autocomplete="username"/>
+        </label>
+        <label>Password
+          <input id="loginPass" type="password" required autocomplete="current-password"/>
+        </label>
+        <button class="primary" type="submit">Login</button>
+      </form>
+    </section>
+
+    <!-- Main App -->
+    <section id="mainView" class="hidden">
+      <header class="topbar">
+        <div class="brand">Offline Inventory & Sales</div>
+        <div class="spacer"></div>
+        <div id="lowStockBadge" class="badge hidden"></div>
+        <div id="currentUserBox" class="userbox"></div>
+        <button id="logoutBtn" class="ghost">Logout</button>
+      </header>
+
+      <nav class="tabs" id="tabs">
+        <button data-tab="inventoryTab" class="active">Inventory</button>
+        <button data-tab="prTab">Purchase Requests</button>
+        <button data-tab="deliveriesTab">Deliveries</button>
+        <button data-tab="salesTab">Sales</button>
+        <button data-tab="logsTab">Audit Logs</button>
+      </nav>
+
+      <main class="content">
+        <!-- Inventory Tab -->
+        <section id="inventoryTab" class="tab active">
+          <div class="toolbar">
+            <input id="invSearch" type="search" placeholder="Search SKU or Name"/>
+            <div class="right">
+              <button id="exportJsonBtn">Export Data</button>
+              <label class="fileBtn">Import Data
+                <input id="importJsonInput" type="file" accept="application/json"/>
+              </label>
+            </div>
+          </div>
+
+          <details class="card">
+            <summary>Add / Update Item</summary>
+            <form id="itemForm" class="grid">
+              <label>SKU<input name="sku" required/></label>
+              <label>Name<input name="name" required/></label>
+              <label>Category<input name="category"/></label>
+              <label>Unit<input name="unit" placeholder="e.g., bag, pcs"/></label>
+              <label>On hand<input name="onhand" type="number" min="0" value="0" required/></label>
+              <label>Min<input name="min" type="number" min="0" value="0"/></label>
+              <label>Max<input name="max" type="number" min="0" value="0"/></label>
+              <button class="primary">Save Item</button>
+            </form>
+          </details>
+
+          <div class="card tableWrap">
+            <table id="inventoryTable">
+              <thead>
+                <tr>
+                  <th>SKU</th><th>Name</th><th>Category</th><th>Unit</th>
+                  <th>On hand</th><th>Min</th><th>Max</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- PR Tab -->
+        <section id="prTab" class="tab">
+          <div class="toolbar">
+            <button id="newPrBtn" class="primary">New Request</button>
+            <span class="muted">Site can create; Office can approve/reject.</span>
+          </div>
+
+          <div id="prList" class="grid"></div>
+
+          <dialog id="prDialog" class="modal">
+            <form method="dialog" id="prForm" class="card">
+              <h3>Create Purchase Request</h3>
+              <div class="grid two">
+                <label>Item
+                  <select id="prItem"></select>
+                </label>
+                <label>Qty
+                  <input id="prQty" type="number" min="1" value="1"/>
+                </label>
+              </div>
+              <div class="chiprow" id="prLines"></div>
+              <menu>
+                <button id="addPrLineBtn" class="ghost">Add Line</button>
+                <button id="submitPrBtn" class="primary">Submit</button>
+                <button value="cancel">Cancel</button>
+              </menu>
+            </form>
+          </dialog>
+        </section>
+
+        <!-- Deliveries Tab -->
+        <section id="deliveriesTab" class="tab">
+          <details class="card">
+            <summary>Record Delivery</summary>
+            <form id="delivForm" class="grid two">
+              <label>Item
+                <select id="delivItem"></select>
+              </label>
+              <label>Qty
+                <input id="delivQty" type="number" min="1" value="1"/>
+              </label>
+              <label>Reference#
+                <input id="delivRef" placeholder="DR/Invoice #"/>
+              </label>
+              <button class="primary">Record</button>
+            </form>
+          </details>
+          <div class="card tableWrap">
+            <table id="delivTable">
+              <thead><tr><th>Date</th><th>Ref#</th><th>Item</th><th>Qty</th><th>By</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Sales Tab -->
+        <section id="salesTab" class="tab">
+          <details class="card">
+            <summary>New Sale</summary>
+            <form id="saleForm" class="grid two">
+              <label>Item
+                <select id="saleItem"></select>
+              </label>
+              <label>Qty
+                <input id="saleQty" type="number" min="1" value="1"/>
+              </label>
+              <button class="primary">Record Sale</button>
+            </form>
+          </details>
+          <div class="card tableWrap">
+            <table id="salesTable">
+              <thead><tr><th>Date</th><th>Item</th><th>Qty</th><th>By</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Logs Tab -->
+        <section id="logsTab" class="tab">
+          <div class="card tableWrap">
+            <table id="logsTable">
+              <thead><tr><th>Date</th><th>User</th><th>Action</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </section>
+  </div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
